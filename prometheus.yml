@@ -1,0 +1,5 @@
+scrape_configs:
+  - job_name: tesla_powerwall
+    scrape_interval: 30s
+    static_configs:
+      - targets: ["tesla-exporter:9998"]

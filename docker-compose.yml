@@ -1,0 +1,11 @@
+services:
+  tesla-exporter:
+    container_name: tesla-exporter
+    build: .
+    volumes:
+      - ./data:/data
+    env_file:
+      - .env
+    ports:
+      - "9998:9998"
+    restart: unless-stopped
