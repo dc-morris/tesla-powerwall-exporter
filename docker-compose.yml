@@ -9,3 +9,10 @@ services:
     ports:
       - "9998:9998"
     restart: unless-stopped
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+    external: true
+    name: monitoring_monitoring
