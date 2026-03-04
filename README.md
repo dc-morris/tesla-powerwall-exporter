@@ -9,26 +9,21 @@ Most existing Powerwall exporters require direct LAN access to the Powerwall Gat
 
 ## Quick Start
 
-1. Clone and configure:
+1. Clone and decrypt secrets:
    ```bash
    git clone https://github.com/dc-morris/tesla-powerwall-exporter.git
    cd tesla-powerwall-exporter
-   cp .env.example .env
-   # Edit .env with your Tesla API credentials
-   ```
-
-2. Seed your refresh token:
-   ```bash
+   SOPS_AGE_KEY_FILE=~/age-key.txt sops -d --input-type dotenv --output-type dotenv .env.enc > .env
    mkdir -p data
-   echo 'YOUR_REFRESH_TOKEN' > data/refresh_token
+   SOPS_AGE_KEY_FILE=~/age-key.txt sops -d --input-type binary --output-type binary data/refresh_token.enc > data/refresh_token
    ```
 
-3. Start the exporter:
+2. Start the exporter:
    ```bash
    docker compose up -d
    ```
 
-4. Verify it's working:
+3. Verify it's working:
    ```bash
    curl http://localhost:9998/metrics
    ```
@@ -144,12 +139,28 @@ Look for `energy_site_id` in the response.
 Add your credentials to `.env` and seed the refresh token:
 
 ```bash
+cp .env.example .env
+# Edit .env with your Tesla API credentials
 mkdir -p data
 echo 'REFRESH_TOKEN_FROM_STEP_4' > data/refresh_token
 docker compose up -d
 ```
 
 The exporter rotates refresh tokens automatically after the initial seed.
+
+### 7. Encrypt secrets (optional)
+
+Secrets are encrypted with [sops](https://github.com/getsops/sops) using [age](https://github.com/FiloSottile/age) so they can be stored in git:
+
+```bash
+# Encrypt
+SOPS_AGE_KEY_FILE=~/age-key.txt sops -e --input-type dotenv --output-type dotenv .env > .env.enc
+SOPS_AGE_KEY_FILE=~/age-key.txt sops -e --input-type binary --output-type binary data/refresh_token > data/refresh_token.enc
+
+# Decrypt
+SOPS_AGE_KEY_FILE=~/age-key.txt sops -d --input-type dotenv --output-type dotenv .env.enc > .env
+SOPS_AGE_KEY_FILE=~/age-key.txt sops -d --input-type binary --output-type binary data/refresh_token.enc > data/refresh_token
+```
 
 ## Endpoints
 
