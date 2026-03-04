@@ -11,11 +11,17 @@ rsync -av \
   --exclude='__pycache__' \
   --exclude='.DS_Store' \
   --exclude='.env' \
-  --exclude='data' \
+  --exclude='data/refresh_token' \
   ./ "${REMOTE}:${REMOTE_DIR}/"
 
-ssh "${REMOTE}" "cd ${REMOTE_DIR} && docker compose up --build -d"
+echo "Decrypting secrets..."
+ssh "${REMOTE}" "cd ${REMOTE_DIR} \
+  && SOPS_AGE_KEY_FILE=~/age-key.txt sops -d --input-type dotenv --output-type dotenv .env.enc > .env \
+  && mkdir -p data \
+  && SOPS_AGE_KEY_FILE=~/age-key.txt sops -d --input-type binary --output-type binary data/refresh_token.enc > data/refresh_token"
 
-echo "Deployed. Waiting for container to start..."
+echo "Starting container..."
+ssh "${REMOTE}" "cd ${REMOTE_DIR} && docker compose down && docker compose up --build -d"
+
 sleep 3
 ssh "${REMOTE}" "cd ${REMOTE_DIR} && docker compose ps"
