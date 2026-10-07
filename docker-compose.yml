@@ -7,7 +7,7 @@ services:
     env_file:
       - .env
     ports:
-      - "9998:9998"
+      - "127.0.0.1:9998:9998"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9998/metrics', timeout=5)"]
